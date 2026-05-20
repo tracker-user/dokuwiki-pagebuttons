@@ -1,70 +1,74 @@
 <?php
 /**
- * Page Buttons plugin
- * 
+ * Page Buttons plugin — local fork: main action component.
+ *
+ * Adds three buttons to DokuWiki's PageMenu: Delete current page, New subpage,
+ * New subfolder. Buttons can be hidden individually via config.
+ *
+ * Local modifications vs. upstream (SoarinFerret/dokuwiki-plugin-pagebuttons b8e3cec, 2022-01-26):
+ *   1. Added `sepchar` to JSINFO so script.js can sanitize user-typed page
+ *      names with DokuWiki's configured separator character (default '_').
+ *      Pairs with the new sanitization in script.js — see README.md for the
+ *      rationale (refined version of upstream PR #19).
+ *   2. Added `public`/`protected` visibility modifiers on every method.
+ *   3. Standardised on `[]` short array syntax throughout.
+ *   4. `getLinkAttributes` in the button classes simplified — the `if empty
+ *      class then assign empty` dance is replaced with `?? ''`.
+ *   5. Removed redundant `getLabel()` overrides in the button classes (they
+ *      duplicated AbstractItem's default behavior exactly).
+ *   6. Removed stray `;` after `}` in actionPage().
+ *   7. `plugin.info.txt` `date` set to `2077-01-26`.
+ *
  * @copyright (c) 2020 Cody Ernesti
- * @license GPLv2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
- * @author  Cody Ernesti
+ * @license   GPLv2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+ * @author    Cody Ernesti
  *
- *  Modified from: https://github.com/dregad/dokuwiki-plugin-deletepagebutton
- *
- *   Original license info:
- *
+ * Originally modified from https://github.com/dregad/dokuwiki-plugin-deletepagebutton
  * @copyright (c) 2020 Damien Regad
- * @license GPLv2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
- * @author  Damien Regad
+ * @author    Damien Regad
  */
 
 // must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
+if (!defined('DOKU_INC')) die();
 
 use dokuwiki\plugin\pagebuttons\DeletePageButton;
 use dokuwiki\plugin\pagebuttons\NewPageButton;
 use dokuwiki\plugin\pagebuttons\NewFolderButton;
 
-/**
- * Class action_plugin_pagebuttons
- *
- * @package dokuwiki\plugin\pagebuttons
- */
-class action_plugin_pagebuttons extends DokuWiki_Action_Plugin {
-
-    /**
-     * Register event handlers.
-     *
-     * @param Doku_Event_Handler $controller The plugin controller
-     */
-    public function register(Doku_Event_Handler $controller) {
-        $controller->register_hook('DOKUWIKI_STARTED', 'AFTER', $this, 'addjsinfo');
-        $controller->register_hook('MENU_ITEMS_ASSEMBLY', 'AFTER', $this, 'addNewPageButton' );
-        $controller->register_hook('MENU_ITEMS_ASSEMBLY', 'AFTER', $this, 'addNewFolderButton' );
-        $controller->register_hook('MENU_ITEMS_ASSEMBLY', 'AFTER', $this, 'addDeleteButton' );
-        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'actionPage' );
+class action_plugin_pagebuttons extends DokuWiki_Action_Plugin
+{
+    public function register(Doku_Event_Handler $controller)
+    {
+        $controller->register_hook('DOKUWIKI_STARTED',      'AFTER',  $this, 'addjsinfo');
+        $controller->register_hook('MENU_ITEMS_ASSEMBLY',   'AFTER',  $this, 'addNewPageButton');
+        $controller->register_hook('MENU_ITEMS_ASSEMBLY',   'AFTER',  $this, 'addNewFolderButton');
+        $controller->register_hook('MENU_ITEMS_ASSEMBLY',   'AFTER',  $this, 'addDeleteButton');
+        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'actionPage');
     }
 
-    
-     /**
-     * Adds details to JSINFO
+    /**
+     * Push plugin/config bits into JSINFO so script.js can read them at runtime.
      *
+     * `sepchar` is DokuWiki's configured separator character (default '_'),
+     * used by the JS pagename sanitizer to substitute space and other
+     * invalid characters before building the new-page URL.
      */
-    function addjsinfo($event, $params){
-        global $JSINFO;
-        global $conf;
-        $JSINFO['plugin_pagebuttons'] = array(
+    public function addjsinfo(Doku_Event $event)
+    {
+        global $JSINFO, $conf;
+        $JSINFO['plugin_pagebuttons'] = [
             'usePrompt' => $this->getConf('usePrompt'),
-            'useslash' => $conf['useslash'],
-            'start' => $conf['start']
-        );
+            'useslash'  => $conf['useslash'],
+            'sepchar'   => $conf['sepchar'],
+            'start'     => $conf['start'],
+        ];
     }
 
     /**
-     * Hook for MENU_ITEMS_ASSEMBLY event.
-     *
-     * Adds 'Delete' button to DokuWiki's PageMenu.
-     *
-     * @param Doku_Event $event
+     * Add 'Delete' button to DokuWiki's PageMenu.
      */
-    public function addDeleteButton(Doku_Event $event) {
+    public function addDeleteButton(Doku_Event $event)
+    {
         global $ID;
 
         if (
@@ -75,98 +79,120 @@ class action_plugin_pagebuttons extends DokuWiki_Action_Plugin {
             return;
         }
 
-        array_splice($event->data['items'], -1, 0, array(new DeletePageButton($this->getLang('delete_menu_item'))));
+        array_splice(
+            $event->data['items'],
+            -1,
+            0,
+            [new DeletePageButton($this->getLang('delete_menu_item'))]
+        );
     }
 
     /**
-     * Hook for MENU_ITEMS_ASSEMBLY event.
-     *
-     * Adds 'New Page' button to DokuWiki's PageMenu.
-     *
-     * @param Doku_Event $event
+     * Add 'New Page' button to DokuWiki's PageMenu.
      */
-    public function addNewPageButton(Doku_Event $event) {
-        global $ID;
-        global $conf;
+    public function addNewPageButton(Doku_Event $event)
+    {
+        global $ID, $conf;
 
         if (
             $event->data['view'] !== 'page'
             || $this->getConf('hideNewPage')
             || !page_exists($ID)
-            || ($this->getConf('onlyShowNewButtonsOnStart') && !(substr_compare($ID, ":".$conf['start'], -strlen(":".$conf['start'])) === 0))
+            || ($this->getConf('onlyShowNewButtonsOnStart') && !$this->isStartPage($ID, $conf['start']))
         ) {
             return;
         }
 
-        array_splice($event->data['items'], -1, 0, array(new NewPageButton($this->getLang('newpage_menu_item'))));
+        array_splice(
+            $event->data['items'],
+            -1,
+            0,
+            [new NewPageButton($this->getLang('newpage_menu_item'))]
+        );
     }
 
     /**
-     * Hook for MENU_ITEMS_ASSEMBLY event.
-     *
-     * Adds 'New Page' button to DokuWiki's PageMenu.
-     *
-     * @param Doku_Event $event
+     * Add 'New Folder' button to DokuWiki's PageMenu.
      */
-    public function addNewFolderButton(Doku_Event $event) {
-        global $ID;
-        global $conf;
+    public function addNewFolderButton(Doku_Event $event)
+    {
+        global $ID, $conf;
 
         if (
             $event->data['view'] !== 'page'
             || $this->getConf('hideNewFolder')
             || !page_exists($ID)
-            || ($this->getConf('onlyShowNewButtonsOnStart') && !(substr_compare($ID, ":".$conf['start'], -strlen(":".$conf['start'])) === 0))
+            || ($this->getConf('onlyShowNewButtonsOnStart') && !$this->isStartPage($ID, $conf['start']))
         ) {
             return;
         }
 
-        array_splice($event->data['items'], -1, 0, array(new NewFolderButton($this->getLang('newfolder_menu_item'))));
+        array_splice(
+            $event->data['items'],
+            -1,
+            0,
+            [new NewFolderButton($this->getLang('newfolder_menu_item'))]
+        );
     }
 
     /**
-     * Determines whether the Delete button should be shown.
-     *
-     * @param $id
-     * @return bool
+     * Whether $id ends with `:<start>` — used to decide if the "new page" /
+     * "new folder" buttons should appear when the corresponding config flag
+     * is on.
      */
-    protected function canDelete($id) {
+    protected function isStartPage($id, $start)
+    {
+        $suffix = ':' . $start;
+        return substr_compare($id, $suffix, -strlen($suffix)) === 0;
+    }
+
+    /**
+     * Whether the current user can delete the given page right now.
+     */
+    protected function canDelete($id)
+    {
         global $ACT;
 
-        return ($ACT == 'show' || empty($ACT))
+        return ($ACT === 'show' || empty($ACT))
             && page_exists($id)
             && auth_quickaclcheck($id) >= AUTH_EDIT
-            && checklock($id) === false && !@file_exists(wikiLockFN($id));
+            && checklock($id) === false
+            && !@file_exists(wikiLockFN($id));
     }
 
     /**
-     * Hook for ACTION_ACT_PREPROCESS event.
+     * Hook for ACTION_ACT_PREPROCESS. When the "Delete" button submits its
+     * URL, we recognise the custom action, delete the page (by saving empty
+     * content), and redirect back to the page view.
      *
-     * Handles the plugin's custom page deletion action: deletes the page and
-     * redirects to page view ('show' action).
-     *
-     * @param Doku_Event $event
+     * For the new-page/new-folder buttons the JS sends the user directly to
+     * `&do=edit` so the action isn't 'newpagebutton' / 'newfolderbutton' in
+     * practice — but the early-return below keeps the code path defensive
+     * in case that ever changes.
      */
-    public function actionPage(Doku_Event $event) {
+    public function actionPage(Doku_Event $event)
+    {
         global $ID, $INFO, $lang;
 
-        // Ignore other actions
-        if ($event->data != 'deletepagebutton' && $event->data != 'newfolderbutton' && $event->data != 'newpagebutton') {
+        // Ignore actions other than our custom ones.
+        if (
+            $event->data !== 'deletepagebutton'
+            && $event->data !== 'newfolderbutton'
+            && $event->data !== 'newpagebutton'
+        ) {
             return;
-        };
+        }
 
-        if(checkSecurityToken() && $INFO['exists']) {
-            if($event->data == 'deletepagebutton'){
-                // Save the page with empty contents to delete it
+        if (checkSecurityToken() && $INFO['exists']) {
+            if ($event->data === 'deletepagebutton') {
+                // Save the page with empty content to delete it (DokuWiki's
+                // standard idiom — empty content is what "deleted" means here).
                 saveWikiText($ID, null, $lang['deleted']);
-
-                // Display confirmation message
                 msg($this->getLang('deleted_ok'), 1);
             }
         }
 
-        // Redirect to page view
+        // Redirect to page view in all cases.
         $event->data = 'redirect';
     }
-
 }

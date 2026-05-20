@@ -28,3 +28,4 @@ $lang['js']['newpage_prompt']   = 'What is the name of the sub-page you would li
 $lang['js']['newfolder_prompt'] = 'What is the name of sub-folder you would like to create ?';
 $lang['js']['btn_ok']           = 'OK';
 $lang['js']['btn_cancel']       = 'Cancel';
+$lang['js']['invalid_name']     = 'Page name is empty or contains only invalid characters.';
