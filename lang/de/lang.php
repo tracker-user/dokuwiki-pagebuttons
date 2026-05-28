@@ -4,14 +4,10 @@
  *
  * @copyright (c) 2022 Michael Schlenstedt
  * @license GPLv2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
- * @author  Cody Ernesti
+ * @author  Michael Schlenstedt
  *
- *  Modified from: https://github.com/dregad/dokuwiki-plugin-deletepagebutton
- *
- *   Original license info:
- *
+ * Modified from: https://github.com/dregad/dokuwiki-plugin-deletepagebutton
  * @copyright (c) 2020 Damien Regad
- * @license GPLv2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
  * @author  Damien Regad
  */
 
@@ -28,3 +24,4 @@ $lang['js']['newpage_prompt']   = 'Welche Unterseite möchtest Du anlegen?';
 $lang['js']['newfolder_prompt'] = 'Welchen Unterordner möchtest Du anlegen?';
 $lang['js']['btn_ok']           = 'OK';
 $lang['js']['btn_cancel']       = 'Abbrechen';
+$lang['js']['invalid_name']     = 'Der Seitenname ist leer oder enthält nur ungültige Zeichen.';

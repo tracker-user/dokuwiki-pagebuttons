@@ -1,7 +1,6 @@
 <?php
 /**
- * English language file for config
- *
+ * Page Buttons plugin - English settings language file
  */
 
 $lang['hideDelete']     = 'Disable the delete button';

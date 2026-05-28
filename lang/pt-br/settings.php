@@ -1,7 +1,6 @@
 <?php
 /**
- * Portuguese-Brazil language file for config
- *
+ * Page Buttons plugin - Portuguese-Brazil settings language file
  */
 
 $lang['hideDelete']     = 'Desabilitar o botão de Excluir página';

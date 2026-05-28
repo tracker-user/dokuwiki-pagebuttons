@@ -1,17 +1,13 @@
 <?php
 /**
  * Page Buttons plugin - English language file
- * 
+ *
  * @copyright (c) 2020 Cody Ernesti
  * @license GPLv2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
  * @author  Cody Ernesti
  *
- *  Modified from: https://github.com/dregad/dokuwiki-plugin-deletepagebutton
- *
- *   Original license info:
- *
+ * Modified from: https://github.com/dregad/dokuwiki-plugin-deletepagebutton
  * @copyright (c) 2020 Damien Regad
- * @license GPLv2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
  * @author  Damien Regad
  */
 

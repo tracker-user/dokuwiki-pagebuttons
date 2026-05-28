@@ -1,8 +1,4 @@
 <?php
-/*
- * default configuration settings
- *
- */
 
 $conf['hideDelete']     = 0;
 $conf['hideNewPage']    = 0;

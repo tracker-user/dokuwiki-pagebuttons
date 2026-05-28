@@ -1,7 +1,6 @@
 <?php
 /**
- * Slovak language file for config
- *
+ * Page Buttons plugin - Slovak settings language file
  */
 
 $lang['hideDelete']     = 'Zakázať tlačidlo Zmazať';

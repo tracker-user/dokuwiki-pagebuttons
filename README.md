@@ -63,10 +63,18 @@ A new lang key `invalid_name` was added for the alert message. Only English is p
 | JS handlers rewritten in strict mode; the per-handler ~30-line jQuery UI dialog boilerplate factored into a single `showDialog()` helper | `script.js` |
 | Empty `if (page == null || page == '') {}` branches replaced with explicit early-return on cancel | `script.js` |
 | `.click(fn)` → `.on('click', fn)` (jQuery 3 best practice) | `script.js` |
+| Fixed PHP 8.3: `saveWikiText($ID, null, ...)` → `saveWikiText($ID, '', ...)` — `null` reached `strlen()`/`trim()` in `PageFile::saveWikiText()`, triggering PHP 8.1+ deprecation notices | `action.php` |
+| Removed `@` suppression from `file_exists()` | `action.php` |
+| `isStartPage()` body simplified to `str_ends_with()` (PHP 8.0+) | `action.php` |
+| `conf/metadata.php` migrated to `[]` array syntax | `conf/metadata.php` |
+| Added `@param`/`@return` docblocks to `__construct()` and `getLinkAttributes()` | `*Button.php` |
+| Fixed German typo: `Deatkviere` → `Deaktiviere` | `lang/de/settings.php` |
+| Added missing `invalid_name` JS key to de, fr, pt-br, sk lang files | `lang/*/lang.php` |
+| Added Russian and Japanese translations | `lang/ru/`, `lang/ja/` |
 
 ### Update suppression
 
-`plugin.info.txt` `date` set to `2077-01-26` (original day/month, year bumped to 2077). The Extension Manager's `isUpdateAvailable()` returns false against any plausible upstream date, so the Update button never appears. Matches the convention used across the rest of our forked plugins.
+`plugin.info.txt` `date` set to `2077-05-28` (year bumped to 2077). The Extension Manager's `isUpdateAvailable()` returns false against any plausible upstream date, so the Update button never appears. Matches the convention used across the rest of our forked plugins.
 
 ## What did NOT change
 

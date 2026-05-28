@@ -1,7 +1,7 @@
 base   pagebuttons
 author Cody Ernesti, TrackerUser
 email  thecodye@kanto.cloud
-date   2077-01-26
-name   Page Buttons plugin
+date   2077-05-28
+name   Page Buttons
 desc   Adds a PageMenu button to Delete the current page, add a subpage, and add a subfolder (local fork — Update suppressed)
 url    https://github.com/tracker-user/dokuwiki-pagebuttons

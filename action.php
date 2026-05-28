@@ -142,8 +142,7 @@ class action_plugin_pagebuttons extends DokuWiki_Action_Plugin
      */
     protected function isStartPage($id, $start)
     {
-        $suffix = ':' . $start;
-        return substr_compare($id, $suffix, -strlen($suffix)) === 0;
+        return str_ends_with($id, ':' . $start);
     }
 
     /**
@@ -157,7 +156,7 @@ class action_plugin_pagebuttons extends DokuWiki_Action_Plugin
             && page_exists($id)
             && auth_quickaclcheck($id) >= AUTH_EDIT
             && checklock($id) === false
-            && !@file_exists(wikiLockFN($id));
+            && !file_exists(wikiLockFN($id));
     }
 
     /**
@@ -187,7 +186,7 @@ class action_plugin_pagebuttons extends DokuWiki_Action_Plugin
             if ($event->data === 'deletepagebutton') {
                 // Save the page with empty content to delete it (DokuWiki's
                 // standard idiom — empty content is what "deleted" means here).
-                saveWikiText($ID, null, $lang['deleted']);
+                saveWikiText($ID, '', $lang['deleted']);
                 msg($this->getLang('deleted_ok'), 1);
             }
         }

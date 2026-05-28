@@ -1,7 +1,6 @@
 <?php
 /**
- * English language file for config
- *
+ * Page Buttons plugin - French settings language file
  */
 
 $lang['hideDelete']     = 'Désactive le bouton "Supprimer la page"';

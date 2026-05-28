@@ -27,6 +27,9 @@ class DeletePageButton extends AbstractItem
     /** @var string icon file */
     protected $svg = __DIR__ . '/images/trash-can-outline.svg';
 
+    /**
+     * @param string $label Menu item label from lang file.
+     */
     public function __construct($label)
     {
         parent::__construct();
@@ -36,6 +39,9 @@ class DeletePageButton extends AbstractItem
 
     /**
      * Append our CSS hook class so script.js can bind a click handler.
+     *
+     * @param  string $classprefix CSS class prefix passed to parent.
+     * @return array
      */
     public function getLinkAttributes($classprefix = 'menuitem ')
     {
